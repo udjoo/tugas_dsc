@@ -1,0 +1,10 @@
+pandas
+plotly
+matplotlib
+scikit-learn
+tensorflow-macos
+uvicorn
+fastapi
+nltk
+python-multipart
+Sastrawi
