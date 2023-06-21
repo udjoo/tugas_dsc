@@ -51,7 +51,7 @@ def preprocess_teks(text):
 
 def preprocess_file(file):
     try:
-        file['Tweet'] = file['Tweet'].apply(preprocess_teks)
+        file['Teks'] = file['Teks'].apply(preprocess_teks)
     except Exception as e:
         print(e)
     return file

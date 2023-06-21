@@ -3,9 +3,10 @@ from collections import Counter
 from libs.nlp import preprocess_teks, preprocess_file
 from services import AppServiceProject
 from io import BytesIO
+from fastapi import FastAPI, Response
 from fastapi.responses import StreamingResponse
 import io
-import sqlite3
+
 
 class CleansingServices(AppServiceProject):
     async def cleansing(self, type, text):
@@ -23,11 +24,11 @@ class CleansingServices(AppServiceProject):
 
                 stream = io.StringIO()
                 preprocess.to_csv(stream, index = False)
-                
                 response = StreamingResponse(iter([stream.getvalue()]),
                             media_type="text/csv"
                             )
-                response.headers["Content-Disposition"] = "attachment; filename=export.csv"
+               
+                response.headers["Content-Disposition"] = "attachment; filename=data_cleansing.csv"
 
                 return response            
         except Exception as e:
