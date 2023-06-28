@@ -2,7 +2,7 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-
+from libs.nlp import preprocess_teks, preprocess_file
 
 import re
 import pandas as pd
@@ -43,7 +43,7 @@ with open("models/mlp/model.p", "rb") as file:
 async def get_sentiment(input, type):
     if type == 'mlp':
         original_text = input
-        text = count_vect.transform([cleansing(original_text)])
+        text = count_vect.transform([preprocess_teks(original_text)])
         result = model_mlp.predict(text)[0]
         return result
     else:
@@ -60,9 +60,9 @@ async def get_sentiment(input, type):
             X = pickle.load(file)
 
             input_text = input
-            sentiment = ['negative', 'neutral', 'positive']
+            sentiment = ['positive', 'neutral', 'negative']
 
-            text = [cleansing(input_text)]
+            text = [preprocess_teks(input_text)]
             predicted = tokenizer.texts_to_sequences(text)
             guess = pad_sequences(predicted, maxlen=X.shape[1])
 
@@ -77,7 +77,7 @@ async def get_sentiment(input, type):
 async def get_sentiment_file(input, type):
     if type == 'mlp':
         original_text = input.loc[0, 'text']
-        text = count_vect.transform([cleansing(original_text)])
+        text = count_vect.transform([preprocess_file(original_text)])
         result = model_mlp.predict(text)[0]
         return original_text, result
     else:
@@ -94,7 +94,7 @@ async def get_sentiment_file(input, type):
             X = pickle.load(file)
 
             input_text = input.loc[0, 'text']
-            sentiment = ['negative', 'neutral', 'positive']
+            sentiment = ['positive', 'negative', 'neutral']
 
             text = [cleansing(input_text)]
             predicted = tokenizer.texts_to_sequences(text)
