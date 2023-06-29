@@ -16,5 +16,5 @@ async def index():
     )
 
 
-app.include_router(analytics.router, tags=["Analytics"])
+app.include_router(analytics.router, tags=["Sentiment Analytics"])
 app.include_router(cleansing.router, tags=["Cleansing"])

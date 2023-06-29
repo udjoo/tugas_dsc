@@ -80,57 +80,19 @@ async def get_sentiment(input, type):
         text = count_vect.transform([preprocess(original_text)])
         result = model_mlp.predict(text)[0]
         return result
+    elif type == 'rnn':
+        model = load_model('models/rnn/model_rnn.h5')
     else:
-        try:
-            if type == 'rnn':
-                model = load_model('models/rnn/model_rnn.h5')
-            else:
-                model = load_model('models/lstm/model_lstm.h5')
+        model = load_model('models/lstm/model_lstm.h5')
                               
-            input_text = input
-            text = [preprocess(input_text)]
-            predicted = tokenizer.texts_to_sequences(text)
-            guess = pad_sequences(predicted, maxlen=X.shape[1])
-            prediction = model.predict(guess)
-            polarity = np.argmax(prediction[0])
-            sentiment = ['neutral', 'positive', 'negative']
-            return sentiment[polarity]
-        except Exception as e:
-            print(e)
-
-
-# async def get_sentiment_file(file, model):
-#     if(model =="lstm"):
-#         model = load_model('models/lstm/model_lstm.h5')
-#     elif(model == "rnn"):
-#         model = load_model('models/rnn/model_rnn.h5')
-#     first_column = file.iloc[:, 0]
-#     file = first_column.astype("string").apply(preprocess)
-#     print("======== finish preprocess =========")
-
-#     file = file.to_frame()
-#     if(isinstance(file, pd.DataFrame)):
-#         file.rename(columns={ file.columns[0]: "Tweet" }, inplace = True)
-#         file["Sentiment"] = None
-#         file['Tweet'] = file['Tweet'].astype('string')
-#         file['Sentiment'] = file['Sentiment'].astype('string')
-
-#         for i in range(len(file)):
-#             text = file['Tweet'][i]
-#             text = [text]
-#             predicted = tokenizer.texts_to_sequences(text)
-#             guess = pad_sequences(predicted, maxlen=X.shape[1])
-#             prediction = model.predict(guess)
-#             polarity = np.argmax(prediction[0])
-#             file["Sentiment"][i] =  sentiment[polarity]
-
-#         print("======== FINISH TEST =========")
-#         return file
-#     else:
-#         print("======== FAILED TEST =========")
-#         return "File is Unreadable"
-
-
+    input_text = input
+    text = [preprocess(input_text)]
+    predicted = tokenizer.texts_to_sequences(text)
+    guess = pad_sequences(predicted, maxlen=X.shape[1])
+    prediction = model.predict(guess)
+    polarity = np.argmax(prediction[0])
+    sentiment = ['neutral', 'positive', 'negative']
+    return sentiment[polarity]
 
 async def get_sentiment_file(input, type):
     if type == 'mlp':
