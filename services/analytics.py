@@ -1,7 +1,7 @@
 import pandas as pd
 from collections import Counter
 from services import AppServiceProject
-from models.sentiment import get_sentiment, get_sentiment_file
+from models.sentiments import get_sentiment, get_sentiment_file
 
 class AnalyticServices(AppServiceProject):
     async def get_sentiment_analytics(self, text, type):

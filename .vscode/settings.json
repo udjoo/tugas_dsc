@@ -1,4 +1,4 @@
 {
     "peacock.color": "#1857a4",
-    "python.analysis.typeCheckingMode": "off"
+    "python.analysis.typeCheckingMode": "basic"
 }
