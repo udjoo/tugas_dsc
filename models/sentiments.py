@@ -65,7 +65,7 @@ Y = pd.get_dummies(labels)
 Y = Y.values
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
 
-sentiment = ['negative', 'neutral', 'positive']
+sentiment = ['neutral', 'positive', 'negative']
 
 #Load Model
 import pickle
@@ -82,10 +82,10 @@ async def get_sentiment(input, type):
         return result
     else:
         try:
-            if type == 'lstm':
-                model = load_model('models/lstm/model_lstm.h5')
-            else:
+            if type == 'rnn':
                 model = load_model('models/rnn/model_rnn.h5')
+            else:
+                model = load_model('models/lstm/model_lstm.h5')
                               
             input_text = input
             text = [preprocess(input_text)]
@@ -93,7 +93,7 @@ async def get_sentiment(input, type):
             guess = pad_sequences(predicted, maxlen=X.shape[1])
             prediction = model.predict(guess)
             polarity = np.argmax(prediction[0])
-            # sentiment = ['negative', 'neutral', 'positive']
+            sentiment = ['neutral', 'positive', 'negative']
             return sentiment[polarity]
         except Exception as e:
             print(e)
@@ -151,7 +151,7 @@ async def get_sentiment_file(input, type):
             guess = pad_sequences(predicted, maxlen=X.shape[1])
             prediction = model.predict(guess)
             polarity = np.argmax(prediction[0])
-            # sentiment = ['negative', 'neutral', 'positive']
+            sentiment = ['neutral', 'positive', 'negative']
 
             return input_text, sentiment[polarity]
         except Exception as e:
