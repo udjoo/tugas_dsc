@@ -8,6 +8,7 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 from pathlib import Path
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 import nltk
 nltk.download('stopwords')
@@ -21,8 +22,18 @@ df= pd.read_csv('data/train_preprocess.tsv.txt', sep='\t', header=None)
 df.columns =['text', 'label']
 
 #Cleansing
+factory = StemmerFactory()
+stemmer = factory.create_stemmer()
+
+alay_dict = pd.read_csv('data/new_kamusalay.csv', encoding='latin-1', header=None)
+alay_dict = alay_dict.rename(columns={0: 'original', 1: 'replacement'})
+
+id_stopword_dict = pd.read_csv('data/stopwordbahasa.csv', header=None)
+id_stopword_dict = id_stopword_dict.rename(columns={0: 'stopword'})
+
 def lowercase(text):
     return text.lower()
+
 def remove_unnecessary_char(text):
     text = re.sub('\n',' ',text) # Remove every '\n'
     text = re.sub('rt',' ',text) # Remove every retweet symbol
@@ -30,16 +41,35 @@ def remove_unnecessary_char(text):
     text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http?://[^\s]+))',' ',text) # Remove every URL
     text = re.sub('  +', ' ', text) # Remove extra spaces
     return text
+    
 def remove_nonaplhanumeric(text):
     text = re.sub('[^0-9a-zA-Z]+', ' ', text) 
     return text
+
+alay_dict_map = dict(zip(alay_dict['original'], alay_dict['replacement']))
+def normalize_alay(text):
+    return ' '.join([alay_dict_map[word] if word in alay_dict_map else word for word in text.split(' ')])
+
+def remove_stopword(text):
+    text = ' '.join(['' if word in id_stopword_dict.stopword.values else word for word in text.split(' ')])
+    text = re.sub('  +', ' ', text) # Remove extra spaces
+    text = text.strip()
+    return text
+
+def stemming(text):
+    return stemmer.stem(text)
+
 def preprocess(text):
     text = lowercase(text) 
     text = remove_nonaplhanumeric(text) 
     text = remove_unnecessary_char(text) 
+    text = normalize_alay(text) 
+    text = stemming(text) 
+    text = remove_stopword(text)
     words = nltk.word_tokenize(text)
     words = [word for word in words if word not in stop_words]
     text = ' '.join(words)
+
     return text
 df['text_clean'] = df.text.apply(preprocess)
 
@@ -80,20 +110,24 @@ async def get_sentiment(input, type):
         text = count_vect.transform([preprocess(original_text)])
         result = model_mlp.predict(text)[0]
         return result
-    elif type == 'rnn':
-        model = load_model('models/rnn/model_rnn.h5')
     else:
-        model = load_model('models/lstm/model_lstm.h5')
+        try:
+            if type == 'rnn':
+                model = load_model('models/rnn/model_rnn.h5')
+            else:
+                model = load_model('models/lstm/model_lstm.h5')
                               
-    input_text = input
-    text = [preprocess(input_text)]
-    predicted = tokenizer.texts_to_sequences(text)
-    guess = pad_sequences(predicted, maxlen=X.shape[1])
-    prediction = model.predict(guess)
-    polarity = np.argmax(prediction[0])
-    sentiment = ['neutral', 'positive', 'negative']
-    return sentiment[polarity]
-
+                input_text = input
+                text = [preprocess(input_text)]
+                predicted = tokenizer.texts_to_sequences(text)
+                guess = pad_sequences(predicted, maxlen=X.shape[1])
+                prediction = model.predict(guess)
+                polarity = np.argmax(prediction[0])
+                sentiment = ['neutral', 'positive', 'negative']
+                return sentiment[polarity]
+        except Exception as e:
+            print(e)
+            
 async def get_sentiment_file(input, type):
     if type == 'mlp':
         original_text = input.loc[0, 'text']
