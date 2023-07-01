@@ -9,7 +9,7 @@ class AnalyticServices(AppServiceProject):
             sentiment = await get_sentiment(text, type)
             
             data = {
-                "data": sentiment
+                "sentiment": sentiment
             }
             
             return self.success_response(data)
@@ -18,10 +18,10 @@ class AnalyticServices(AppServiceProject):
 
     async def get_sentiment_analytics_file(self, input, type):
         try:
-            original_text, sentiment = await get_sentiment_file(input, type)
+            input_text, sentiment = await get_sentiment_file(input, type)
 
             data = {
-                "original_text": original_text,
+                "text": input_text,
                 "sentiment": sentiment
             }
 
