@@ -94,39 +94,61 @@ Y = pd.get_dummies(labels)
 Y = Y.values
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=1)
 
-sentiment = ['neutral', 'positive', 'negative']
+sentiment = ['negative', 'neutral', 'positive']
 
 #Load Model
+import pickle
+with open("models/mlp/feature.p", "rb") as file:
+  count_vect = pickle.load(file)
+with open("models/mlp/model.p", "rb") as file:
+  model_mlp = pickle.load(file)
+
 async def get_sentiment(input, type):
-    if type == 'rnn':
-        model = load_model('models/rnn/model_rnn.h5')
+    if type == 'mlp':
+        original_text = input
+        text = count_vect.transform([preprocess(original_text)])
+        result = model_mlp.predict(text)[0]
+        return result
+    else:
+        try:
+            if type == 'lstm':
+                model = load_model('models/lstm/model_lstm.h5')
+            else:
+                model = load_model('models/rnn/model_rnn.h5')
 
-    elif type == 'lstm':
-        model = load_model('models/lstm/model_lstm.h5')
+            input_text = input
+            text = [preprocess(input_text)]
+            predicted = tokenizer.texts_to_sequences(text)
+            guess = pad_sequences(predicted, maxlen=X.shape[1])
+            prediction = model.predict(guess)
+            polarity = np.argmax(prediction[0])
+            sentiment = ['negative', 'neutral', 'positive']
+            
+            return sentiment[polarity]
+        except Exception as e:
+            print(e)
 
-    input_text = input
-    clean_text = [preprocess(input_text)]
-    predicted = tokenizer.texts_to_sequences(clean_text)
-    guess = pad_sequences(predicted, maxlen=X.shape[1])
-    prediction = model.predict(guess)
-    polarity = np.argmax(prediction[0])
-
-    return sentiment[polarity]
-
-       
 async def get_sentiment_file(input, type):
-    if type == 'rnn':
-        model = load_model('models/rnn/model_rnn.h5')
+    if type == 'mlp':
+        original_text = input.loc[0, 'text']
+        text = count_vect.transform([preprocess(original_text)])
+        result = model_mlp.predict(text)[0]
+        return original_text, result
+    else:
+        try:
+            if type == 'rnn':
+                model = load_model('models/rnn/model_rnn.h5')
+            else:
+                model = load_model('models/lstm/model_lstm.h5')
 
-    elif type == 'lstm':
-        model = load_model('models/lstm/model_lstm.h5')
+            input_text = input.loc[0, 'text']
+            text = [preprocess(input_text)]
+            predicted = tokenizer.texts_to_sequences(text)
+            guess = pad_sequences(predicted, maxlen=X.shape[1])
+            prediction = model.predict(guess)
+            polarity = np.argmax(prediction[0])
+            sentiment = ['negative', 'neutral', 'positive']
 
-    input_text = input.loc[0, 'text']
-    clean_text = [preprocess(input_text)]
-    predicted = tokenizer.texts_to_sequences(clean_text)
-    guess = pad_sequences(predicted, maxlen=X.shape[1])
-    prediction = model.predict(guess)
-    polarity = np.argmax(prediction[0])
- 
-    return input_text, sentiment[polarity]
-    
+            return input_text, sentiment[polarity]
+        except Exception as e:
+            print(e)
