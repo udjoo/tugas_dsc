@@ -122,7 +122,7 @@ async def get_sentiment(input, type):
             guess = pad_sequences(predicted, maxlen=X.shape[1])
             prediction = model.predict(guess)
             polarity = np.argmax(prediction[0])
-            sentiment = ['negative', 'neutral', 'positive']
+            # sentiment = ['negative', 'neutral', 'positive']
             
             return sentiment[polarity]
         except Exception as e:
@@ -147,7 +147,7 @@ async def get_sentiment_file(input, type):
             guess = pad_sequences(predicted, maxlen=X.shape[1])
             prediction = model.predict(guess)
             polarity = np.argmax(prediction[0])
-            sentiment = ['negative', 'neutral', 'positive']
+            # sentiment = ['negative', 'neutral', 'positive']
 
             return input_text, sentiment[polarity]
         except Exception as e:

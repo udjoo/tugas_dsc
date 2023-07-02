@@ -7,6 +7,22 @@ from io import StringIO
 
 router = APIRouter()
 
+@router.get("/sentiment-mlp")
+async def sentiment_analytics_rnn(
+    text: str
+):
+    result = await AnalyticServices().get_sentiment_analytics(text=text, type='mlp')
+    return result
+
+
+@router.post("/sentiment-mlp-file")
+async def sentiment_analytics_rnn_file(
+    file: UploadFile = File(...)
+):
+    data = pd.read_csv(
+        StringIO(str(file.file.read(), 'latin-1')), encoding='latin-1', sep='\t')
+    result = await AnalyticServices().get_sentiment_analytics_file(input=data, type="mlp",)
+    return result
 
 @router.get("/sentiment-rnn")
 async def sentiment_analytics_rnn(
