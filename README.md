@@ -1,3 +1,8 @@
-pip install -r requirements.txt
-menjalankan aplikasi --> uvicorn main:app
-download model ---> https://drive.google.com/drive/folders/17DEin7TPiqLs8ZrhG8-Xgntozu9DKQNN?usp=sharing
+
+## DSC Challange Platinum
+***
+* pip install -r requirements.txt
+* menjalankan aplikasi --> uvicorn main:app
+* download model ---> https://shorturl.at/bnqxT
+* tugas perhitungan NN ---> https://shorturl.at/ahqx2
+* bahan presentasi ---> https://shorturl.at/rzKO7
