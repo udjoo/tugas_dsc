@@ -10,3 +10,4 @@ python-multipart
 Sastrawi
 PySastrawi
 pydantic==1.9.0
+seaborn
