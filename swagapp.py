@@ -14,6 +14,11 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from keras.models import load_model
 from pathlib import Path
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+import nltk
+nltk.download('stopwords')
+nltk.download('punkt')
+from nltk.corpus import stopwords
+stop_words = set(stopwords.words('indonesian'))
 
 app = Flask(__name__)
 
@@ -136,8 +141,8 @@ def rnn_text():
 
     text = [preprocess(upload_text)]
 
-    predicted = tokenizer.texts_to_sequences(text)
-    rnn_test = pad_sequences(feature,maxlen=feature_file_from_rnn.shape[1])
+    feature = tokenizer.texts_to_sequences(text)
+    rnn_test = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
 
     prediction = model_rnn.predict(rnn_test)
     polarity = np.argmax(prediction[0])
@@ -220,7 +225,7 @@ def lstm_file():
     file = request.files["upload_file"]
     df = pd.read_csv(file, encoding='latin-1')
     df = df.rename(columns={df.columns[0]: 'text'})
-    df['text_clean'] = df.apply(lambda row : cleansing(row['text']), axis = 1)
+    df['text_clean'] = df.apply(lambda row : preprocess(row['text']), axis = 1)
     
     result = []
 
