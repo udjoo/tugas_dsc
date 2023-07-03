@@ -17,7 +17,7 @@ from nltk.corpus import stopwords
 stop_words = set(stopwords.words('indonesian'))
 
 #load Data
-df= pd.read_csv('data/train_preprocess.tsv.txt', sep='\t', header=None)
+df= pd.read_csv('D:/Binar/Challenge/Binarchallenge2/tugas_dsc/data/databaru.txt', header=None)
 df.columns =['text', 'label']
 
 #Cleansing
@@ -45,6 +45,16 @@ def remove_nonaplhanumeric(text):
     text = re.sub('[^0-9a-zA-Z]+', ' ', text) 
     return text
 
+def remove_emoji(text):
+    subs = re.compile("["
+        u"\U0001F600-\U0001F64F"  # emoticons
+        u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+        u"\U0001F680-\U0001F6FF"  # transport & map symbols
+        u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                           "]+", flags = re.UNICODE)
+    text_emo = subs.sub(r'',text)
+    return text_emo
+
 alay_dict_map = dict(zip(alay_dict['original'], alay_dict['replacement']))
 def normalize_alay(text):
     return ' '.join([alay_dict_map[word] if word in alay_dict_map else word for word in text.split(' ')])
@@ -62,6 +72,7 @@ def preprocess(text):
     text = lowercase(text) 
     text = remove_nonaplhanumeric(text) 
     text = remove_unnecessary_char(text) 
+    text = remove_emoji(text)
     text = normalize_alay(text) 
     text = stemming(text) 
     text = remove_stopword(text)
