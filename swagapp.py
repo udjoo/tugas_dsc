@@ -133,7 +133,7 @@ model_rnn = load_model('models/rnn/model_rnn.h5')
 model_lstm = load_model('models/lstm/model_lstm.h5')
 
 # Endpoint RNN teks
-@swag_from('docs/rnn_text.yml',methods=['POST'])
+@swag_from('docs/rnn_text.yml',methods=['POST']) 
 @app.route('/rnn_text',methods=['POST'])
 def rnn_text():
 
@@ -143,7 +143,7 @@ def rnn_text():
 
     feature = tokenizer.texts_to_sequences(text)
     rnn_test = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
-
+    
     prediction = model_rnn.predict(rnn_test)
     polarity = np.argmax(prediction[0])
     get_sentiment = sentiment[polarity]
@@ -202,7 +202,7 @@ def lstm_text():
 
     feature = tokenizer.texts_to_sequences(text)
     lstm_test = pad_sequences(feature,maxlen=feature_file_from_lstm.shape[1])
-
+    
     prediction = model_lstm.predict(lstm_test)
     polarity = np.argmax(prediction[0])
     get_sentiment = sentiment[polarity]
