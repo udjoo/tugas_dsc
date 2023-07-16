@@ -2,13 +2,12 @@ tags:
   - name: Sentimen analisis RNN
 get:
   description: File yang akan diproses
-consumes:
-  - multipart/form-data
+
 parameters:
   - name: file
     in: formData
     description: File to upload
-    required: true
+    required: required
     type: file
 responses:
     '200':

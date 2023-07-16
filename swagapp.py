@@ -25,6 +25,7 @@ app = Flask(__name__)
 #load Data
 df= pd.read_csv('D:/Binar/Challenge/Binarchallenge2/tugas_dsc/data/databaru.txt', header=None)
 df.columns =['text', 'label']
+sentiment = ['negative', 'neutral', 'positive']
 
 #Cleansing
 factory = StemmerFactory()
@@ -116,7 +117,6 @@ swagger = Swagger(app, template=swagger_template,
 #feature extraction
 max_features = 100000
 tokenizer = Tokenizer(num_words=max_features, split=' ',lower=True)
-sentiment = ['negative', 'neutral', 'positive']
 
 # tokenizer rnn
 file_rnn = open('models/rnn/x_pad_sequences.pickle','rb')
@@ -163,34 +163,46 @@ def rnn_text():
 @swag_from('docs/rnn_file.yml',methods=['POST'])
 @app.route('/rnn_file',methods=['POST'])
 def rnn_file():
-    file = request.files["upload_file"]
-    df = pd.read_csv(file, encoding='latin-1')
-    df = df.rename(columns={df.columns[0]: 'text'})
-    df['text_clean'] = df.apply(lambda row : preprocess(row['text']), axis = 1)
     
-    result = []
+    # Uploaded file
+    file = request.files.getlist('file')[0]
 
-    for index, row in df.iterrows():
-        text = tokenizer.texts_to_sequences([(row['text_clean'])])
-        rnn_test = pad_sequences(text, maxlen=feature_file_from_rnn.shape[1])
-        prediction = model_rnn.predict(rnn_test)
-        polarity = np.argmax(prediction[0])
-        get_sentiment = sentiment[polarity]
-        result.append(get_sentiment)
+    # Import file csv ke Pandas
+    df = pd.read_csv(file, encoding='latin-1')
 
-    original = df.text_clean.to_list()
+    # Get text from file in "List" format
+    texts = df.Tweet.to_list()
 
-    json_response = {
-        'status_code' : 200,
-        'description' : "Hasil sentimen analisis dengan model RNN",
-        'data' : {
-            'text' : original,
-            'sentiment' : result
-        },
+ # Loop list or original text and predict to model
+    text_with_sentiment = []
+    for original_text in texts:
+
+        # Cleansing
+        text = [preprocess(original_text)]
+        # Feature extraction
+        feature = tokenizer.texts_to_sequences(text)
+        feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
+        # Inference
+        prediction = model_rnn.predict(feature)
+        get_sentiment = sentiment[np.argmax(prediction[0])]
+
+        # Predict "text_clean" to the Model. And insert to list "text_with_sentiment".
+        text_with_sentiment.append({
+            'text': original_text,
+            'sentiment': get_sentiment
+        })
+    
+    # Define API response
+        json_response = {
+        'status_code': 200,
+        'description': "Teks yang sudah diproses",
+        'data': text_with_sentiment,
     }
-    response_data = jsonify(json_response)
+        response_data = jsonify(json_response)
     return response_data
 
+
+   
 # Endpoint LSTM teks
 @swag_from('docs/LSTM_text.yml',methods=['POST'])
 @app.route('/LSTM_text',methods=['POST'])
@@ -222,33 +234,44 @@ def lstm_text():
 @swag_from('docs/LSTM_file.yml',methods=['POST'])
 @app.route('/LSTM_file',methods=['POST'])
 def lstm_file():
-    file = request.files["upload_file"]
-    df = pd.read_csv(file, encoding='latin-1')
-    df = df.rename(columns={df.columns[0]: 'text'})
-    df['text_clean'] = df.apply(lambda row : preprocess(row['text']), axis = 1)
     
-    result = []
+    # Upladed file
+    file = request.files.getlist('file')[0]
 
-    for index, row in df.iterrows():
-        text = tokenizer.texts_to_sequences([(row['text_clean'])])
-        lstm_test = pad_sequences(text, maxlen=feature_file_from_lstm.shape[1])
-        prediction = model_lstm.predict(lstm_test)
-        polarity = np.argmax(prediction[0])
-        get_sentiment = sentiment[polarity]
-        result.append(get_sentiment)
+    # Import file csv ke Pandas
+    df = pd.read_csv(file, encoding='latin-1')
 
-    original = df.text_clean.to_list()
+    # Get text from file in "List" format
+    texts = df.Tweet.to_list()
+    
+ # Loop list or original text and predict to model
+    text_with_sentiment = []
+    for original_text in texts:
 
+        # Cleansing
+        text = [preprocess(original_text)]
+        # Feature extraction
+        feature = tokenizer.texts_to_sequences(text)
+        feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
+        # Inference
+        prediction = model_lstm.predict(feature)
+        get_sentiment = sentiment[np.argmax(prediction[0])]
+
+        # Predict "text_clean" to the Model. And insert to list "text_with_sentiment".
+        text_with_sentiment.append({
+            'text': original_text,
+            'sentiment': get_sentiment
+        })
+    
+    # Define API response
     json_response = {
-        'status_code' : 200,
-        'description' : "Hasil sentimen analisis dengan model RNN",
-        'data' : {
-            'text' : original,
-            'sentiment' : result
-        },
+        'status_code': 200,
+        'description': "Teks yang sudah diproses",
+        'data': text_with_sentiment,
     }
     response_data = jsonify(json_response)
     return response_data
+
 
 if __name__ == '__main__':
     app.run()
